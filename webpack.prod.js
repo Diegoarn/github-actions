@@ -2,9 +2,29 @@ const { merge } = require("webpack-merge");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require("path");
 const common = require("./webpack.common.js");
+const helpers = require("./helpers");
+const Dotenv = require("dotenv-webpack");
 
 module.exports = merge(common, {
   mode: "production",
+  output: {
+    path: helpers.resolveFromRootPath("dist"),
+    filename: "./js/[name].[chunkhash].js",
+    assetModuleFilename: "./images/[hash][ext][query]",
+  },
+  optimization: {
+    runtimeChunk: "single",
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          chunks: "all",
+          name: "vendor",
+          test: /[\\/]node_modules[\\/]/,
+          enforce: true,
+        },
+      },
+    },
+  },
   module: {
     rules: [
       {
@@ -31,6 +51,9 @@ module.exports = merge(common, {
     new MiniCssExtractPlugin({
       filename: "[name].css",
       chunkFilename: "[id].css",
+    }),
+    new Dotenv({
+      path: "prod.env",
     }),
   ],
 });
